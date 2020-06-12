@@ -44,7 +44,8 @@ class GoodReads:
 
         tree = ElementTree.fromstring(response.content)
         book = tree.find("book")
+        title = book.find("title").text
         url = book.find("url").text
         description = book.find("description").text
 
-        return {"url": url, "description": description}
+        return {"url": url, "title": title, "description": description}
