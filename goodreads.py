@@ -93,7 +93,7 @@ class GoodReads:
 
         books = tree.findall("search/results/work/best_book")
 
-        if books is None:
+        if books is None or len(books) == 0:
             return None
 
         if is_valid_author_name:

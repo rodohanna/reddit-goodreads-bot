@@ -5,3 +5,4 @@ client_secret=some-secret
 username=some-username
 password=some-password
 goodreads_key=some-key
+sqlite_db=some-db
