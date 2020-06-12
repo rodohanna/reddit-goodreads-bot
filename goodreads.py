@@ -17,9 +17,10 @@ class GoodReads:
         self.api_key = config["goodreads_key"]
         return
 
+    # GoodReads mandates that we do not request a given API method more than once
+    # a second. This function keeps us in line with GoodReads' API guidelines.
     def sleep_if_needed(self, now, api_method):
         last_api_call_unix = self.api_method_to_last_called_unix[api_method]
-
         if last_api_call_unix is not 0:
             seconds_since_last_api_call = now - last_api_call_unix
 
@@ -40,20 +41,16 @@ class GoodReads:
         self.sleep_if_needed(now, "author")
 
         params = [('key', self.api_key)]
-
         response = requests.get("https://www.goodreads.com/api/author_url/%s" %
                                 name,
                                 params=params)
-
         self.api_method_to_last_called_unix["author"] = time.time()
 
         if response.status_code == 404:
             return None
 
         tree = ElementTree.fromstring(response.content)
-
         name = tree.find("author/name")
-
         if name is None:
             return None
 
@@ -62,7 +59,7 @@ class GoodReads:
     def get_book_id(self, book, author=None):
         author_name = self.search_author_by_name(author)
 
-        print("author | returned", author, author_name)
+        print("author: %s, returned author: %s" % (author, author_name))
 
         query = book
         is_valid_author_name = False
@@ -76,23 +73,18 @@ class GoodReads:
                 is_valid_author_name = True
 
         now = time.time()
-
         self.sleep_if_needed(now, "search")
 
         params = [('key', self.api_key), ('q', query)]
-
         response = requests.get("https://www.goodreads.com/search/index.xml",
                                 params=params)
-
         self.api_method_to_last_called_unix["search"] = time.time()
 
         if response.status_code == 404:
             return None
 
         tree = ElementTree.fromstring(response.content)
-
         books = tree.findall("search/results/work/best_book")
-
         if books is None or len(books) == 0:
             return None
 
@@ -107,22 +99,18 @@ class GoodReads:
 
     def get_book_info(self, book_id):
         now = time.time()
-
         self.sleep_if_needed(now, "show")
 
         params = [('key', self.api_key)]
-
         response = requests.get("https://www.goodreads.com/book/show/%s.xml" %
                                 book_id,
                                 params=params)
-
         self.api_method_to_last_called_unix["show"] = time.time()
 
         if response.status_code == 404:
             return None
 
         tree = ElementTree.fromstring(response.content)
-
         book = tree.find("book")
         popular_shelves = book.find("popular_shelves")
         authors = book.find("authors")

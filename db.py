@@ -17,7 +17,7 @@ class DB:
                 id              INT PRIMARY KEY NOT NULL,
                 title           TEXT NOT NULL,
                 url             TEXT NOT NULL,
-                times_requested INT DEFAULT 0,
+                times_requested INT DEFAULT 1,
                 updated         INT NOT NULL
             );
         '''
@@ -65,6 +65,8 @@ class DB:
         self.conn.execute(sql_create_summons_table)
         self.conn.execute(sql_create_posts_table)
         self.conn.execute(sql_create_cache_table)
+
+        print("DB: Tables created successfully")
 
     def save_book(self, book):
         insertion = '''
