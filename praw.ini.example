@@ -1,0 +1,7 @@
+[DEFAULT]
+user_agent=<platform>:<app ID>:<version string> (by u/<Reddit username>)
+client_id=some-id
+client_secret=some-secret
+username=some-username
+password=some-password
+goodreads_key=some-key
