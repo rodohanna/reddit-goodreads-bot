@@ -43,9 +43,36 @@ class GoodReads:
                 return None
 
         tree = ElementTree.fromstring(response.content)
+
         book = tree.find("book")
+        popular_shelves = book.find("popular_shelves")
+        authors = book.find("authors")
+
+        shelf_list = []
+        for shelf in popular_shelves:
+            shelf_name = shelf.get("name")
+            if shelf_name == "to-read" or shelf_name == "currently-reading" or shelf_name == "favorites":
+                continue
+            shelf_list.append(shelf_name)
+
+        author_list = []
+        for author in authors:
+            author_name = author.find("name").text
+            author_list.append(author_name)
+
+        shelves = shelf_list[:5]
         title = book.find("title").text
         url = book.find("url").text
         description = book.find("description").text
+        num_pages = book.find("num_pages").text
+        pub_year = book.find("work/original_publication_year").text
 
-        return {"url": url, "title": title, "description": description}
+        return {
+            "url": url,
+            "num_pages": num_pages,
+            "pub_year": pub_year,
+            "shelves": shelves,
+            "authors": author_list,
+            "title": title,
+            "description": description
+        }
