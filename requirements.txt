@@ -1,8 +1,10 @@
 certifi==2020.4.5.2
 chardet==3.0.4
+fuzzywuzzy==0.18.0
 idna==2.9
 praw==7.0.0
 prawcore==1.4.0
+python-Levenshtein==0.12.0
 requests==2.23.0
 six==1.15.0
 update-checker==0.17

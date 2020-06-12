@@ -3,6 +3,7 @@ import re
 import time
 from xml.etree import ElementTree
 from configparser import ConfigParser
+from fuzzywuzzy import fuzz
 
 config = ConfigParser()
 config.read('praw.ini')
@@ -10,37 +11,115 @@ config = config["DEFAULT"]
 
 
 class GoodReads:
-    last_api_call_unix = 0
+    api_method_to_last_called_unix = {"show": 0, "search": 0, "author": 0}
 
     def __init__(self):
         self.api_key = config["goodreads_key"]
         return
 
-    def get_book_info(self, title, author=None, depth=0):
-        now = time.time()
+    def sleep_if_needed(self, now, api_method):
+        last_api_call_unix = self.api_method_to_last_called_unix[api_method]
 
-        if self.last_api_call_unix is not 0:
-            seconds_since_last_api_call = now - self.last_api_call_unix
+        if last_api_call_unix is not 0:
+            seconds_since_last_api_call = now - last_api_call_unix
 
-            print("seconds since last API call", seconds_since_last_api_call)
+            print("[%s] seconds since last API call" % api_method,
+                  seconds_since_last_api_call)
 
             time_to_sleep = 1 - seconds_since_last_api_call
             if time_to_sleep > 0:
                 print("sleeping for ", time_to_sleep)
                 time.sleep(time_to_sleep)
 
-        params = [('key', self.api_key), ('title', title), ('author', author)]
-        response = requests.get("https://www.goodreads.com/book/title.xml",
+    def search_author_by_name(self, name):
+        if name is None:
+            return None
+
+        now = time.time()
+
+        self.sleep_if_needed(now, "author")
+
+        params = [('key', self.api_key)]
+
+        response = requests.get("https://www.goodreads.com/api/author_url/%s" %
+                                name,
                                 params=params)
-        self.last_api_call_unix = time.time()
+
+        self.api_method_to_last_called_unix["author"] = time.time()
 
         if response.status_code == 404:
-            if author != None and depth == 0:
-                print("Not found.. trying again.")
-                return self.get_book_info(title, None, depth + 1)
+            return None
+
+        tree = ElementTree.fromstring(response.content)
+
+        name = tree.find("author/name")
+
+        if name is None:
+            return None
+
+        return name.text
+
+    def get_book_id(self, book, author=None):
+        author_name = self.search_author_by_name(author)
+
+        print("author | returned", author, author_name)
+
+        query = book
+        is_valid_author_name = False
+
+        if author is not None and author_name is not None:
+            ratio = fuzz.ratio(author.lower(), author_name.lower())
+            print("Author name ratio: ", ratio)
+            if ratio < 90:  # we are pretty sure the author name is actually par of the book title
+                query += " by " + author
             else:
-                print("Not found again.. returning None")
-                return None
+                is_valid_author_name = True
+
+        now = time.time()
+
+        self.sleep_if_needed(now, "search")
+
+        params = [('key', self.api_key), ('q', query)]
+
+        response = requests.get("https://www.goodreads.com/search/index.xml",
+                                params=params)
+
+        self.api_method_to_last_called_unix["search"] = time.time()
+
+        if response.status_code == 404:
+            return None
+
+        tree = ElementTree.fromstring(response.content)
+
+        books = tree.findall("search/results/work/best_book")
+
+        if books is None:
+            return None
+
+        if is_valid_author_name:
+            for book in books:
+                author_name = book.find("author/name").text
+                ratio = fuzz.ratio(author.lower(), author_name.lower())
+                if ratio >= 90:
+                    return book.find("id").text
+
+        return books[0].find("id").text
+
+    def get_book_info(self, book_id):
+        now = time.time()
+
+        self.sleep_if_needed(now, "show")
+
+        params = [('key', self.api_key)]
+
+        response = requests.get("https://www.goodreads.com/book/show/%s.xml" %
+                                book_id,
+                                params=params)
+
+        self.api_method_to_last_called_unix["show"] = time.time()
+
+        if response.status_code == 404:
+            return None
 
         tree = ElementTree.fromstring(response.content)
 

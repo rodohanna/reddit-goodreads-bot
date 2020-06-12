@@ -10,7 +10,7 @@ search_link = "https://www.goodreads.com/search?q=%s&search_type=books&search[fi
 
 
 def get_book_and_author(match):
-    book, *author = match.rsplit("by", 1)
+    book, *author = match.lower().rsplit("by", 1)
     book = book.strip()
     author = author[0].strip() if author else None
 
@@ -39,14 +39,15 @@ def format_disclaimer(book):
         book, search_link % book)
 
 
-def format_header(book, book_info):
+def format_header(search_query, book_info):
     pages = book_info["num_pages"]
     year = book_info["pub_year"]
     shelves = ", ".join(book_info["shelves"])
     authors = ", ".join(book_info["authors"])
 
     return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s | )[^(Search \"%s\")](%s)" % (
-        authors, pages, year, shelves, book, search_link % book)
+        authors, pages, year, shelves, search_query,
+        search_link % search_query)
 
 
 def is_long_version(group):
@@ -58,7 +59,7 @@ def is_short_version(group):
 
 
 def clean_group(group):
-    return group.replace("{", "").replace("}", "")
+    return group.replace("{", "").replace("}", "").replace("*", "")
 
 
 for comment in reddit.subreddit("test").stream.comments(skip_existing=True):
@@ -73,14 +74,18 @@ for comment in reddit.subreddit("test").stream.comments(skip_existing=True):
 
         book, author = get_book_and_author(cleaned)
 
-        book_info = goodreads.get_book_info(book, author)
+        book_id = goodreads.get_book_id(book, author)
+
+        book_info = goodreads.get_book_info(book_id)
+
+        print("book_id", book_id, book_info)
 
         if book_info is None:
             continue
 
         formatted_reddit_comment += format_link(book_info) + "\n\n"
 
-        formatted_reddit_comment += format_header(book, book_info) + "\n\n"
+        formatted_reddit_comment += format_header(cleaned, book_info) + "\n\n"
 
         if is_long_version(group):
             formatted_reddit_comment += format_description(book_info) + "\n\n"
