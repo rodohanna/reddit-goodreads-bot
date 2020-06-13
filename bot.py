@@ -102,10 +102,13 @@ class Bot:
         search_link = "https://www.goodreads.com/search?q=%s&search_type=books" % search_query
 
         return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s | )[^(Search \"%s\")](%s)" % (
-            authors, pages, year, shelves, search_query, search_link)
+            authors, pages or "?", year
+            or "?", shelves, search_query, search_link)
 
     def __format_book_footer(self, book_suggestions):
-        return "^(This book has been suggested %d times)" % book_suggestions
+        s = "s" if book_suggestions > 1 else ""
+        return "^(This book has been suggested %s time%s)" % (book_suggestions,
+                                                              s)
 
     def __is_long_version(self, group):
         return (group.count("{") + group.count("}")) == 4
@@ -117,4 +120,6 @@ class Bot:
         return group.replace("{", "").replace("}", "").replace("*", "")
 
     def __make_footer(self, suggestions):
-        return "^(%d books suggested | )^(Bug? DM me! |)[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)" % suggestions
+        s = "s" if suggestions > 1 else ""
+        return "^(%s book%s suggested | )^(Bug? DM me! |)[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)" % (
+            suggestions, s)
