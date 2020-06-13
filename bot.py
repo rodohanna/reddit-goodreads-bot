@@ -15,9 +15,11 @@ class Bot:
         self.db.create_tables()
 
     def listen_to_subreddit(self, name):
-        for comment in self.reddit.subreddit(name).stream.comments(
-                skip_existing=True):
+        for comment in self.reddit.subreddit(name).stream.comments():
             print("comment: ", comment.body)
+            comment_invocations = self.db.count_comment_invocations(comment.id)
+            if comment_invocations > 0:
+                continue
             submission = comment.submission
             formatted_reddit_comment = ""
             for m in re.finditer('\{\{([^}]+)\}\}|\{([^}]+)\}', comment.body):

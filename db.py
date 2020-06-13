@@ -78,6 +78,17 @@ class DB:
         count = cursor.fetchall()
         return count[0][0]
 
+    def count_comment_invocations(self, comment_id):
+        select = '''
+            SELECT COUNT(*) FROM invocations
+            WHERE comment_id = ?
+        '''
+
+        self.check_connection()
+        cursor = self.conn.execute(select, (comment_id, ))
+        count = cursor.fetchall()
+        return count[0][0]
+
     def count_book_requests(self, book_id):
         select = '''
             SELECT times_requested FROM books
