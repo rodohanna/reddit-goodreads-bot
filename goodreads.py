@@ -56,12 +56,18 @@ class GoodReads:
 
         return name.text
 
-    def get_book_id(self, book, author=None):
+    def get_book_id(self,
+                    book_title,
+                    author=None,
+                    depth=0,
+                    original_book_title=None):
         author_name = self.search_author_by_name(author)
+
+        print("book_title: %s" % book_title)
 
         print("author: %s, returned author: %s" % (author, author_name))
 
-        query = book
+        query = book_title
         is_valid_author_name = False
 
         if author is not None and author_name is not None:
@@ -89,11 +95,32 @@ class GoodReads:
             return None
 
         if is_valid_author_name:
+            best_author_name_ratio = 0
+            best_book_name_ratio = 0
+            chosen_book = None
+            if depth > 0 and original_book_title is not None:
+                book_title = original_book_title
             for book in books:
-                author_name = book.find("author/name").text
-                ratio = fuzz.ratio(author.lower(), author_name.lower())
-                if ratio >= 90:
-                    return book.find("id").text
+                _author_name = book.find("author/name").text
+                _book_title = book.find("title").text
+
+                author_name_ratio = fuzz.ratio(author.lower(),
+                                               _author_name.lower())
+                book_name_ratio = fuzz.ratio(book_title.lower(),
+                                             _book_title.lower())
+                # print("looking at %s[%d] and %s[%d]" %
+                #       (_author_name, author_name_ratio, _book_title,
+                #        book_name_ratio))
+
+                if author_name_ratio >= 90 and author_name_ratio > best_author_name_ratio and book_name_ratio >= 90 and book_name_ratio > best_book_name_ratio:
+                    chosen_book = book
+
+            if chosen_book is not None:
+                return chosen_book.find("id").text
+
+        if depth == 0 and author is not None:
+            return self.get_book_id(book_title + " " + author, author,
+                                    depth + 1, book_title)
 
         return books[0].find("id").text
 
