@@ -68,6 +68,27 @@ class DB:
 
         print("DB: Tables created successfully")
 
+    def count_invocations(self):
+        select = '''
+            SELECT COUNT(*) FROM invocations
+        '''
+
+        self.check_connection()
+        cursor = self.conn.execute(select)
+        count = cursor.fetchall()
+        return count[0][0]
+
+    def count_book_requests(self, book_id):
+        select = '''
+            SELECT times_requested FROM books
+            WHERE id = ?
+        '''
+
+        self.check_connection()
+        cursor = self.conn.execute(select, (book_id, ))
+        count = cursor.fetchall()
+        return count[0][0]
+
     def save_book(self, book):
         insertion = '''
             INSERT INTO books(id, title, url, updated)

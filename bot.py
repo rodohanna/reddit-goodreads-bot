@@ -46,6 +46,8 @@ class Bot:
                 self.db.save_book(book)
                 self.db.save_invocation(invocation)
 
+                book_suggestions = self.db.count_book_requests(book_id)
+
                 # Build the formatted Reddit comment
                 formatted_reddit_comment += self.__format_link(
                     book_info) + "\n\n"
@@ -55,13 +57,18 @@ class Bot:
                     formatted_reddit_comment += self.__format_description(
                         book_info) + "\n\n"
 
+                formatted_reddit_comment += self.__format_book_footer(
+                    book_suggestions) + "\n\n"
+
             if len(formatted_reddit_comment) > 0:
                 # We are responding to a comment, so let's save the post
                 post = (submission.id, submission.title, submission.url)
                 self.db.save_post(post)
 
                 formatted_reddit_comment += "***\n\n"
-                formatted_reddit_comment += self.__make_footer()
+
+                invocations = self.db.count_invocations()
+                formatted_reddit_comment += self.__make_footer(invocations)
                 comment.reply(formatted_reddit_comment)
 
     def __extract_book_and_author(self, match):
@@ -97,6 +104,9 @@ class Bot:
         return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s | )[^(Search \"%s\")](%s)" % (
             authors, pages, year, shelves, search_query, search_link)
 
+    def __format_book_footer(self, book_suggestions):
+        return "^(This book has been suggested %d times)" % book_suggestions
+
     def __is_long_version(self, group):
         return (group.count("{") + group.count("}")) == 4
 
@@ -106,5 +116,5 @@ class Bot:
     def __clean_group(self, group):
         return group.replace("{", "").replace("}", "").replace("*", "")
 
-    def __make_footer(self):
-        return "^(Bug? DM me! | )[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)"
+    def __make_footer(self, suggestions):
+        return "^(%d books suggested | )^(Bug? DM me! |)[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)" % suggestions
