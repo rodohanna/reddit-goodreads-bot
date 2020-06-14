@@ -97,6 +97,7 @@ class GoodReads:
         if is_valid_author_name:
             best_author_name_ratio = 0
             best_book_name_ratio = 0
+            best_series_name_ratio = 0
             chosen_book = None
             if depth > 0 and original_book_title is not None:
                 book_title = original_book_title
@@ -104,19 +105,33 @@ class GoodReads:
                 _author_name = book.find("author/name").text
                 _book_title = book.find("title").text
 
+                _book_title, series_name = self.__split_book_title_and_series(
+                    _book_title)
+
+                series_name_ratio = -1
+                if series_name is not None:
+                    series_name_ratio = fuzz.ratio(book_title.lower(),
+                                                   series_name.lower())
                 author_name_ratio = fuzz.ratio(author.lower(),
                                                _author_name.lower())
                 book_name_ratio = fuzz.ratio(book_title.lower(),
                                              _book_title.lower())
-                # print("looking at %s[%d] and %s[%d]" %
-                #       (_author_name, author_name_ratio, _book_title,
-                #        book_name_ratio))
 
-                if author_name_ratio >= 90 and author_name_ratio >= best_author_name_ratio and book_name_ratio >= best_book_name_ratio:
-                    # print("setting chosen book")
-                    best_author_name_ratio = author_name_ratio
-                    best_book_name_ratio = book_name_ratio
-                    chosen_book = book
+                # print("looking at %s[%d] and %s[%d] and series %s[%d]" %
+                #       (_author_name, author_name_ratio, _book_title,
+                #        book_name_ratio, series_name, series_name_ratio))
+
+                if author_name_ratio >= 90 and author_name_ratio >= best_author_name_ratio:
+                    if book_name_ratio >= best_series_name_ratio and book_name_ratio >= best_book_name_ratio:
+                        # print("setting chosen book based on book")
+                        best_author_name_ratio = author_name_ratio
+                        best_book_name_ratio = book_name_ratio
+                        chosen_book = book
+                    if series_name_ratio >= best_book_name_ratio and series_name_ratio >= best_series_name_ratio:
+                        # print("setting chosen book based on book series")
+                        best_author_name_ratio = author_name_ratio
+                        best_series_name_ratio = series_name_ratio
+                        chosen_book = book
 
             if chosen_book is not None:
                 # print("chosen book %s" % chosen_book.find("title").text)
@@ -174,3 +189,19 @@ class GoodReads:
             "title": title,
             "description": description
         }
+
+    def __split_book_title_and_series(self, book_title):
+        series_match = None
+        for series_match in re.finditer(r"\(([^)]+)\)", book_title):
+            pass
+        if series_match is not None:
+            group = series_match.group()
+            book_index_in_series = re.search("#\d.", group)
+
+            if book_index_in_series is not None:
+                series_name = group
+                book_title = book_title.replace(series_name, "").strip()
+
+                return (book_title, series_name.replace("(",
+                                                        "").replace(")", ""))
+        return (book_title, None)
