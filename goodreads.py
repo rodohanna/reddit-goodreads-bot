@@ -108,6 +108,14 @@ class GoodReads:
                 _book_title, series_name = self.__split_book_title_and_series(
                     _book_title)
 
+                # some users will summon the bot with only the part of the title
+                # before the ':'. i.e. Hello by Someone when the actual title is
+                # Hello: World by Someone. This can confuse the bot. This check handles
+                # that case.
+                if book_title.lower() + ":" in _book_title.lower():
+                    _book_title = _book_title.split(":")[0]
+                    # print("updated book title %s" % _book_title)
+
                 series_name_ratio = -1
                 if series_name is not None:
                     series_name_ratio = fuzz.ratio(book_title.lower(),
