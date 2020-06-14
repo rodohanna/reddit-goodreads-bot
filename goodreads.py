@@ -130,19 +130,19 @@ class GoodReads:
                 #        book_name_ratio, series_name, series_name_ratio))
 
                 if author_name_ratio >= 90 and author_name_ratio >= best_author_name_ratio:
-                    if book_name_ratio >= best_series_name_ratio and book_name_ratio >= best_book_name_ratio:
+                    if book_name_ratio >= best_series_name_ratio and book_name_ratio > best_book_name_ratio:
                         # print("setting chosen book based on book")
                         best_author_name_ratio = author_name_ratio
                         best_book_name_ratio = book_name_ratio
                         chosen_book = book
-                    if series_name_ratio >= best_book_name_ratio and series_name_ratio >= best_series_name_ratio:
+                    if series_name_ratio >= best_book_name_ratio and series_name_ratio > best_series_name_ratio:
                         # print("setting chosen book based on book series")
                         best_author_name_ratio = author_name_ratio
                         best_series_name_ratio = series_name_ratio
                         chosen_book = book
 
             if chosen_book is not None:
-                # print("chosen book %s" % chosen_book.find("title").text)
+                print("chosen book %s" % chosen_book.find("title").text)
                 return chosen_book.find("id").text
 
         if depth == 0 and author is not None:
