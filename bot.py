@@ -42,9 +42,8 @@ class Bot:
                 # Save the book and summons for our stats
                 book = (book_id, book_info["title"], book_info["url"],
                         int(time.time()))
-                invocation = (str(uuid4()), book_id, comment.id,
-                              submission.id, comment.body, comment.permalink,
-                              int(time.time()))
+                invocation = (str(uuid4()), book_id, comment.id, submission.id,
+                              "", comment.permalink, int(time.time()))
                 self.db.save_book(book)
                 self.db.save_invocation(invocation)
 
