@@ -11,9 +11,6 @@ config = config["DEFAULT"]
 failures = 0
 while True:
     try:
-        if failures > 50:
-            print("The bot has failed too many times.. Killing the bot :(")
-            exit()
         bot = Bot()
         bot.listen_to_subreddit(config["subreddit"])
     except Exception as e:
