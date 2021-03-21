@@ -19,7 +19,7 @@ class DefaultFormatter(Formatter):
             or "?", shelves, self.cleaned, search_link)
 
     def format_description(self):
-        description = book_info["description"]
+        description = self.book_info["description"]
         if description is None:
             return ""
         description = re.sub('<.*?>', '', description.replace("<br />", "\n"))

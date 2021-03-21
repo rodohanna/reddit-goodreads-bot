@@ -4,9 +4,9 @@ from lite_formatter import LiteFormatter
 class FormatterFactory:
     @staticmethod
     def for_subreddit(subreddit_name, book_info, cleaned, book_suggestions):
-        print("building formatter for: " + subreddit_name)
+        print("building formatter for: " + subreddit_name.lower())
         if subreddit_name.lower() == "romancebooks":
-            return DefaultFormatter(
+            return LiteFormatter(
                     book_info=book_info,
                     cleaned=cleaned,
                     book_suggestions=book_suggestions)
