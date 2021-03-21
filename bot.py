@@ -57,19 +57,19 @@ class Bot:
                     book_suggestions=book_suggestions)
 
                 # Build the formatted Reddit comment
-                formatted_reddit_comment += formatter.format_link() + "\n\n"
-                formatted_reddit_comment += formatter.format_header() + "\n\n"
+                formatted_reddit_comment += formatter.format_link() + formatter.get_section_separator()
+                formatted_reddit_comment += formatter.format_header() + formatter.get_section_separator()
                 if self.__is_long_version(group) and formatter.supports_long_version():
-                    formatted_reddit_comment += formatter.format_description() + "\n\n"
+                    formatted_reddit_comment += formatter.format_description() + formatter.get_section_separator()
 
-                formatted_reddit_comment += formatter.format_book_footer() + "\n\n"
+                formatted_reddit_comment += formatter.format_book_footer() + formatter.get_section_separator()
 
             if len(formatted_reddit_comment) > 0:
                 # We are responding to a comment, so let's save the post
                 post = (submission.id, submission.title, submission.url)
                 self.db.save_post(post)
 
-                formatted_reddit_comment += "***\n\n"
+                formatted_reddit_comment += "***" + formatter.get_section_separator()
 
                 invocations = self.db.count_invocations()
                 formatted_reddit_comment += self.__make_footer(invocations)

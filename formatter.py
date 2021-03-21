@@ -18,3 +18,6 @@ class Formatter:
 
     def supports_long_version(self):
         return True
+    
+    def get_section_separator(self):
+        return '\n\n'
