@@ -1,4 +1,5 @@
 from formatter import Formatter
+import re
 
 class DefaultFormatter(Formatter):
     def format_link(self):

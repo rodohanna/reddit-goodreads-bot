@@ -11,7 +11,7 @@ class FormatterFactory:
                     cleaned=cleaned,
                     book_suggestions=book_suggestions)
         elif subreddit_name.lower() == "test":
-            return LiteFormatter(
+            return DefaultFormatter(
                 book_info=book_info,
                 cleaned=cleaned,
                 book_suggestions=book_suggestions)
