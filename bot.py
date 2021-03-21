@@ -93,5 +93,5 @@ class Bot:
 
     def __make_footer(self, suggestions):
             s = "s" if suggestions > 1 else ""
-            return "^(%s book%s suggested | )^(Bug? DM me! | )[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)" % (
+            return "^(%s book%s suggested | )[^(I don't feel so good.. )](https://debugger.medium.com/goodreads-is-retiring-its-current-api-and-book-loving-developers-arent-happy-11ed764dd95)^(| )[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)" % (
                 suggestions, s)
