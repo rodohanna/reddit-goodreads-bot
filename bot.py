@@ -4,6 +4,7 @@ import time
 from uuid import uuid4
 from goodreads import GoodReads
 from db import DB
+from formatter_factory import FormatterFactory
 
 
 class Bot:
@@ -49,17 +50,19 @@ class Bot:
 
                 book_suggestions = self.db.count_book_requests(book_id)
 
-                # Build the formatted Reddit comment
-                formatted_reddit_comment += self.__format_link(
-                    book_info) + "\n\n"
-                formatted_reddit_comment += self.__format_header(
-                    cleaned, book_info) + "\n\n"
-                if self.__is_long_version(group):
-                    formatted_reddit_comment += self.__format_description(
-                        book_info) + "\n\n"
+                formatter = FormatterFactory.for_subreddit(
+                    subreddit_name=comment.subreddit.display_name,
+                    book_info=book_info,
+                    cleaned=cleaned,
+                    book_suggestions=book_suggestions)
 
-                formatted_reddit_comment += self.__format_book_footer(
-                    book_suggestions) + "\n\n"
+                # Build the formatted Reddit comment
+                formatted_reddit_comment += formatter.format_link() + "\n\n"
+                formatted_reddit_comment += formatter.format_header() + "\n\n"
+                if self.__is_long_version(group) and formatter.supports_long_version():
+                    formatted_reddit_comment += formatter.format_description() + "\n\n"
+
+                formatted_reddit_comment += formatter.format_book_footer() + "\n\n"
 
             if len(formatted_reddit_comment) > 0:
                 # We are responding to a comment, so let's save the post
@@ -79,38 +82,6 @@ class Bot:
 
         return (book, author)
 
-    def __format_link(self, book_info):
-        title = book_info["title"]
-        url = book_info["url"]
-
-        return "[**%s**](%s)" % (title, url)
-
-    def __format_description(self, book_info):
-        description = book_info["description"]
-        if description is None:
-            return ""
-        description = re.sub('<.*?>', '', description.replace("<br />", "\n"))
-
-        chunks = [">" + chunk for chunk in description.split("\n")]
-
-        return "\n".join(chunks)
-
-    def __format_header(self, search_query, book_info):
-        pages = book_info["num_pages"]
-        year = book_info["pub_year"]
-        shelves = ", ".join(book_info["shelves"])
-        authors = ", ".join(book_info["authors"])
-        search_link = "https://www.goodreads.com/search?q=%s&search_type=books" % search_query
-
-        return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s | )[^(Search \"%s\")](%s)" % (
-            authors, pages or "?", year
-            or "?", shelves, search_query, search_link)
-
-    def __format_book_footer(self, book_suggestions):
-        s = "s" if book_suggestions > 1 else ""
-        return "^(This book has been suggested %s time%s)" % (book_suggestions,
-                                                              s)
-
     def __is_long_version(self, group):
         return (group.count("{") + group.count("}")) == 4
 
@@ -121,6 +92,6 @@ class Bot:
         return group.replace("{", "").replace("}", "").replace("*", "")
 
     def __make_footer(self, suggestions):
-        s = "s" if suggestions > 1 else ""
-        return "^(%s book%s suggested | )^(Bug? DM me! | )[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)" % (
-            suggestions, s)
+            s = "s" if suggestions > 1 else ""
+            return "^(%s book%s suggested | )^(Bug? DM me! | )[^(Source)](https://github.com/rodohanna/reddit-goodreads-bot)" % (
+                suggestions, s)
