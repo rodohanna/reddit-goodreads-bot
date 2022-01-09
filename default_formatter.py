@@ -14,7 +14,7 @@ class DefaultFormatter(Formatter):
         shelves = ", ".join(self.book_info["shelves"])
         authors = ", ".join(self.book_info["authors"])
 
-        return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s" % (
+        return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s)" % (
             authors, pages or "?", year or "?", shelves)
 
     def format_description(self):
