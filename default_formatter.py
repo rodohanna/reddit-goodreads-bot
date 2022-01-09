@@ -13,11 +13,9 @@ class DefaultFormatter(Formatter):
         year = self.book_info["pub_year"]
         shelves = ", ".join(self.book_info["shelves"])
         authors = ", ".join(self.book_info["authors"])
-        search_link = "https://www.goodreads.com/search?q=%s&search_type=books" % self.cleaned
 
-        return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s | )[^(Search \"%s\")](%s)" % (
-            authors, pages or "?", year
-            or "?", shelves, self.cleaned, search_link)
+        return "^(By: %s | %s pages | Published: %s | Popular Shelves: %s" % (
+            authors, pages or "?", year or "?", shelves)
 
     def format_description(self):
         description = self.book_info["description"]
