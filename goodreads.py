@@ -4,6 +4,7 @@ import time
 from xml.etree import ElementTree
 from configparser import ConfigParser
 from fuzzywuzzy import fuzz
+from pprint import pprint
 
 config = ConfigParser()
 config.read('praw.ini')
@@ -85,6 +86,8 @@ class GoodReads:
         response = requests.get("https://www.goodreads.com/search/index.xml",
                                 params=params)
         self.api_method_to_last_called_unix["search"] = time.time()
+
+        pprint(vars(response))
 
         if response.status_code == 404:
             return None
